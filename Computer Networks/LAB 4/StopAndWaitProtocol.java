@@ -14,7 +14,7 @@ public class StopAndWaitProtocol {
     }
 
     public void sendFr() {
-        System.out.println("================================================");
+        System.out.println("-----------------------------------------------");
         System.out.println("Sending Frame " + frId);
         isAck = false;
         
@@ -38,7 +38,6 @@ public class StopAndWaitProtocol {
             System.out.println("Timeout! Resending Frame " + frId);
             sendFr();
         }
-        System.out.println("-----------------------------------------------");
     }
 
     private void sendAck() {
