@@ -2,9 +2,6 @@
 using namespace std;
 
 int main() {
-
-    // Matrix for storing Process Id, Arrival Time,
-    // Burst Time, Waiting Time, and Turnaround Time.
     int A[100][5];
     int i, n, total = 0;
     float avg_wt, avg_tat;
@@ -13,19 +10,15 @@ int main() {
     cin >> n;
 
     cout << "Enter Arrival Time and Burst Time:" << endl;
-
-    // User Input Arrival Time and Burst Time, and assigning Process Id.
     for (i = 0; i < n; i++) {
         cout << "P" << i + 1 << " Arrival Time: ";
-        cin >> A[i][1];  // Arrival Time
+        cin >> A[i][1];  
 
         cout << "P" << i + 1 << " Burst Time: ";
-        cin >> A[i][2];  // Burst Time
+        cin >> A[i][2]; 
 
-        A[i][0] = i + 1;  // Process ID
+        A[i][0] = i + 1;
     }
-
-    // Sorting processes based on Arrival Time to simulate FCFS behavior
     for (i = 0; i < n; i++) {
         for (int j = i + 1; j < n; j++) {
             if (A[i][1] > A[j][1]) {
@@ -35,16 +28,14 @@ int main() {
             }
         }
     }
-
-    // Calculation of Waiting Times
-    A[0][3] = 0;  // Waiting time for the first process is 0
+    A[0][3] = 0;
 
     for (i = 1; i < n; i++) {
         A[i][3] = A[i-1][3] + A[i-1][2];
         if (A[i][3] < A[i][1]) {
             A[i][3] = A[i][1] - A[i][1];
         } else {
-            A[i][3] -= A[i][1]; // Adjusting waiting time considering arrival time
+            A[i][3] -= A[i][1];
         }
         total += A[i][3];
     }
@@ -54,7 +45,6 @@ int main() {
 
     cout << "P\tAT\tBT\tWT\tTAT" << endl;
 
-    // Calculation of Turnaround Time and printing the data.
     for (i = 0; i < n; i++) {
         A[i][4] = A[i][2] + A[i][3];  // Turnaround time = Burst Time + Waiting Time
         total += A[i][4];

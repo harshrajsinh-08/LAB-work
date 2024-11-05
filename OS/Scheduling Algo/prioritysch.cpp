@@ -4,20 +4,16 @@
 using namespace std;
 
 struct Process {
-    int id;           // Process ID
-    int arrival;      // Arrival Time
-    int burst;        // Burst Time
-    int priority;     // Priority
-    int wait;         // Waiting Time
-    int turnaround;   // Turnaround Time
+    int id;           
+    int arrival;      
+    int burst;        
+    int priority;     
+    int wait;         
+    int turnaround;   
 };
-
-// Comparator to sort by arrival time
 bool compareByArrival(const Process &a, const Process &b) {
     return a.arrival < b.arrival;
 }
-
-// Comparator to sort by priority (lower number means higher priority)
 bool compareByPriority(const Process &a, const Process &b) {
     return a.priority < b.priority;
 }
@@ -42,8 +38,6 @@ int main() {
         cin >> processes[i].priority;
         processes[i].id = i + 1;
     }
-
-    // Sort processes by Arrival Time
     sort(processes.begin(), processes.end(), compareByArrival);
 
     int currentTime = 0;
@@ -52,7 +46,6 @@ int main() {
     int completedCount = 0;
 
     while (completedCount < n) {
-        // Find the process with the highest priority that has arrived
         Process *currentProcess = nullptr;
         for (int i = 0; i < n; i++) {
             if (!completed[i] && processes[i].arrival <= currentTime) {
@@ -66,8 +59,6 @@ int main() {
             currentTime++;
             continue;
         }
-
-        // Process the selected process
         currentProcess->wait = currentTime - currentProcess->arrival;
         currentProcess->turnaround = currentProcess->wait + currentProcess->burst;
         currentTime += currentProcess->burst;
