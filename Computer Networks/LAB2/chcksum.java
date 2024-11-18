@@ -1,8 +1,6 @@
 import java.util.Scanner;
-
 public class chcksum {
-
-    public static void main(String[] args) {
+        public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         System.out.print("Enter the transmission message (e.g., register number): ");
         String regno = sc.nextLine();
@@ -14,15 +12,8 @@ public class chcksum {
             System.out.print(ch + " -> " + binary + "   ");
         }
         System.out.println();
-
         String checksum = chcksumfxn(regno);
         System.out.println("\nCalculated Checksum at Transmitter: " + checksum);
-
-        System.out.print("\nEnter the received message: ");
-        String rcvmsg = sc.nextLine();
-
-        boolean isValid = validate(rcvmsg, checksum);
-        System.out.println(isValid ? "Valid message. There is no error in transmission" : "Error: Invalid checksum detected");
     }
 
     public static String charbin(char ch) {
@@ -69,31 +60,5 @@ public class chcksum {
         System.out.println();
         System.out.println("Final Checksum: " + checksum);
         return checksum;
-    }
-
-    public static boolean validate(String rcvmsg, String checksum) {
-        int sum = 0;
-        System.out.println("\nValidating Received Message:");
-        for (int i = 0; i < rcvmsg.length(); i++) {
-            char ch = rcvmsg.charAt(i);
-            String binary = charbin(ch);
-            int temp = Integer.parseInt(binary, 2);
-            sum += temp;
-            System.out.println("Processing digit: " + ch + " (" + binary + ") => Current sum (before wrapping): " + Integer.toBinaryString(sum) + " (" + sum + ")");
-        }
-        System.out.println();
-
-        sum += Integer.parseInt(checksum, 2);
-        String binsum = Integer.toBinaryString(sum);
-        while (binsum.length() > 4) {
-            int carry = Integer.parseInt(binsum.substring(0, binsum.length() - 4), 2);
-            int wrappedSum = Integer.parseInt(binsum.substring(binsum.length() - 4), 2) + carry;
-            binsum = Integer.toBinaryString(wrappedSum);
-            System.out.println("Sum after wrapping: " + binsum);
-        }
-        System.out.println();
-
-        System.out.println("Final Checksum Calculation: " + binsum);
-        return binsum.equals("1111");
     }
 }

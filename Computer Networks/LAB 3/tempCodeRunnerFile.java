@@ -1,6 +1,4 @@
-import java.util.Scanner;
-
-public class crc {
+public class tryt {
     public static String cal_crc(String input, String polynomial) {
         int dataLen = input.length();
         int polyLen = polynomial.length();
@@ -8,10 +6,11 @@ public class crc {
         for (int i = 0; i < polyLen - 1; i++) {
             data.append("0");
         }
-        for (int i = 0; i <= dataLen-1; i++) {
+        for (int i = 0; i <= dataLen-polyLen; i++) {
             if (data.charAt(i) == '1') {
                 for (int j = 0; j < polyLen; j++) {
-                    char newChar = (char) (data.charAt(i + j) ^ polynomial.charAt(j) ^ '0');
+                    char newChar = (char) (data.charAt(i + j) ^
+                            polynomial.charAt(j) ^ '0');
                     data.setCharAt(i + j, newChar);
                 }
             }

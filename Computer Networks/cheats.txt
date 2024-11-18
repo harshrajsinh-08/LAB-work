@@ -1,0 +1,599 @@
+{ //codebits
+    
+    import java.util.Arrays;
+
+public class codebits {
+    public static void main(String[] args) {
+        System.out.println("\nThe code bits are as follows: ");
+        int[][] Ht = {
+            {1, 0, 1},
+            {1, 1, 1},
+            {1, 1, 0},
+            {0, 1, 1},
+            {1, 0, 0},
+            {0, 1, 0},
+            {0, 0, 1}
+        };
+
+        int[][] H = transpose(Ht);
+        int q = H.length;
+        int n = H[0].length;
+        int k = n - q;
+
+        int[][] Pt = new int[q][k];
+        for (int i = 0; i < q; i++) {
+            for (int j = 0; j < k; j++) {
+                Pt[i][j] = H[i][j];
+            }
+        }
+
+        int[][] P = transpose(Pt);
+        for (int m1 = 0; m1 < 2; m1++) {
+            for (int m2 = 0; m2 < 2; m2++) {
+                for (int m3 = 0; m3 < 2; m3++) {
+                    for (int m4 = 0; m4 < 2; m4++) {
+                        int[] m = {m1, m2, m3, m4};
+                        int[] q1 = matrixMultiply(m, P);
+                        standardize(q1);
+                        System.out.println("Code bits: " + Arrays.toString(q1));
+                        
+                        for (int i = 0; i < q1.length - 1; i++) {
+                            for (int j = i + 1; j < q1.length; j++) {
+                                int hammingDistance = hammingDistance(q1[i], q1[j]);
+                                System.out.println("Hamming distance between " + q1[i] + " and " + q1[j] + ": " + hammingDistance);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public static int[][] transpose(int[][] matrix) {
+        int rows = matrix.length;
+        int cols = matrix[0].length;
+        int[][] transposed = new int[cols][rows];
+        for (int i = 0; i < cols; i++) {
+            for (int j = 0; j < rows; j++) {
+                transposed[i][j] = matrix[j][i];
+            }
+        }
+        return transposed;
+    }
+
+    public static int[] matrixMultiply(int[] vector, int[][] matrix) {
+        int[] result = new int[matrix[0].length];
+        for (int i = 0; i < matrix[0].length; i++) {
+            for (int j = 0; j < vector.length; j++) {
+                result[i] += vector[j] * matrix[j][i];
+            }
+        }
+        return result;
+    }
+
+    public static void standardize(int[] vector) {
+        for (int i = 0; i < vector.length; i++) {
+            vector[i] %= 2;
+        }
+    }
+
+    public static int hammingDistance(int a, int b) {
+        int x = a ^ b; 
+        int distance = 0;
+        while (x > 0) {
+            distance += x & 1;
+            x >>= 1;
+        }
+        return distance;
+    }
+}
+}
+
+{
+    //checksum
+import java.util.Scanner;
+
+public class chcksum {
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter the transmission message (e.g., register number): ");
+        String regno = sc.nextLine();
+
+        System.out.println("\nBinary conversion of each character:");
+        for (int i = 0; i < regno.length(); i++) {
+            char ch = regno.charAt(i);
+            String binary = charbin(ch);
+            System.out.print(ch + " -> " + binary + "   ");
+        }
+        System.out.println();
+
+        String checksum = chcksumfxn(regno);
+        System.out.println("\nCalculated Checksum at Transmitter: " + checksum);
+
+        System.out.print("\nEnter the received message: ");
+        String rcvmsg = sc.nextLine();
+
+        boolean isValid = validate(rcvmsg, checksum);
+        System.out.println(isValid ? "Valid message. There is no error in transmission" : "Error: Invalid checksum detected");
+    }
+
+    public static String charbin(char ch) {
+        int value;
+        if (Character.isDigit(ch)) {
+            value = ch - '0';
+        } else {
+            value = Character.toUpperCase(ch) - 'A' + 10;
+        }
+        String binary = Integer.toBinaryString(value);
+        while (binary.length() < 4) {
+            binary = "0" + binary;
+        }
+        return binary;
+    }
+
+    public static String chcksumfxn(String regno) {
+        int sum = 0;
+        System.out.println("\nCalculating Checksum:");
+        for (int i = 0; i < regno.length(); i++) {
+            char ch = regno.charAt(i);
+            String binary = charbin(ch);
+            int temp = Integer.parseInt(binary, 2);
+            sum += temp;
+            System.out.println("Processing digit: " + ch + "  => Current sum: " + Integer.toBinaryString(sum) + " (" + sum + ")");
+        }
+        System.out.println();
+
+        String binsum = Integer.toBinaryString(sum);
+        while (binsum.length() > 4) {
+            int carry = Integer.parseInt(binsum.substring(0, binsum.length() - 4), 2);
+            int wrappedSum = Integer.parseInt(binsum.substring(binsum.length() - 4), 2) + carry;
+            binsum = Integer.toBinaryString(wrappedSum);
+            System.out.println("Sum after wrapping: " + binsum);
+        }
+
+        String checksum = "";
+        for (char bit : binsum.toCharArray()) {
+            checksum += (bit == '0') ? '1' : '0';
+        }
+        while (checksum.length() < 4) {
+            checksum = "1" + checksum;
+        }
+        System.out.println();
+        System.out.println("Final Checksum: " + checksum);
+        return checksum;
+    }
+
+    public static boolean validate(String rcvmsg, String checksum) {
+        int sum = 0;
+        System.out.println("\nValidating Received Message:");
+        for (int i = 0; i < rcvmsg.length(); i++) {
+            char ch = rcvmsg.charAt(i);
+            String binary = charbin(ch);
+            int temp = Integer.parseInt(binary, 2);
+            sum += temp;
+            System.out.println("Processing digit: " + ch + " (" + binary + ") => Current sum (before wrapping): " + Integer.toBinaryString(sum) + " (" + sum + ")");
+        }
+        System.out.println();
+
+        sum += Integer.parseInt(checksum, 2);
+        String binsum = Integer.toBinaryString(sum);
+        while (binsum.length() > 4) {
+            int carry = Integer.parseInt(binsum.substring(0, binsum.length() - 4), 2);
+            int wrappedSum = Integer.parseInt(binsum.substring(binsum.length() - 4), 2) + carry;
+            binsum = Integer.toBinaryString(wrappedSum);
+            System.out.println("Sum after wrapping: " + binsum);
+        }
+        System.out.println();
+
+        System.out.println("Final Checksum Calculation: " + binsum);
+        return binsum.equals("1111");
+    }
+}
+
+}
+
+{
+    //ERROR HANDLING
+    import java.util.Scanner;
+
+public class ErrorHandling {
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter the message (e.g., your register number): ");
+        String regno = sc.next();
+        int reg = Integer.parseInt(regno);
+
+        String[] reg_bin = new String[regno.length()];
+        System.out.println("\nBinary conversion of each character:");
+        for (int i = 0; i < regno.length(); i++) {
+            reg_bin[i] = toBinary(regno.charAt(i));
+            System.out.println(regno.charAt(i) + " -> " + reg_bin[i]);
+        }
+
+        String lrc = calcLrc(reg_bin);
+        System.out.println("\nLRC (Longitudinal Redundancy Check): " + lrc);
+
+        String vrc = calcVrc(reg_bin);
+        System.out.println("VRC (Vertical Redundancy Check): " + vrc);
+
+        sc.close();
+    }
+
+    public static String toBinary(char character) {
+        switch (character) {
+            case '0': return "0000";
+            case '1': return "0001";
+            case '2': return "0010";
+            case '3': return "0011";
+            case '4': return "0100";
+            case '5': return "0101";
+            case '6': return "0110";
+            case '7': return "0111";
+            case '8': return "1000";
+            case '9': return "1001";
+            case 'A': case 'a': return "1010";
+            case 'B': case 'b': return "1011";
+            case 'C': case 'c': return "1100";
+            case 'D': case 'd': return "1101";
+            case 'E': case 'e': return "1110";
+            case 'F': case 'f': return "1111";
+            default: return "0000"; 
+        }
+    }
+
+    public static String calcLrc(String[] reg_bin) {
+        int length = reg_bin[0].length();
+        int[] lrc = new int[length];
+
+        for (String bin : reg_bin) {
+            for (int i = 0; i < length; i++) {
+                lrc[i] ^= Character.getNumericValue(bin.charAt(i));
+            }
+        }
+
+        StringBuilder lrcResult = new StringBuilder();
+        for (int bit : lrc) {
+            lrcResult.append(bit);
+        }
+        return lrcResult.toString();
+    }
+
+    public static String calcVrc(String[] reg_bin) {
+        StringBuilder vrcResult = new StringBuilder();
+
+        for (String bin : reg_bin) {
+            int onesCount = 0;
+
+            for (int i = 0; i < bin.length(); i++) {
+                if (bin.charAt(i) == '1') {
+                    onesCount++;
+                }
+            }
+
+            vrcResult.append(onesCount % 2 == 0 ? '0' : '1');
+        }
+        return vrcResult.toString();
+    }
+}
+}
+
+{// GO BACK n
+
+    import java.util.Random;
+import java.util.Scanner;
+
+public class GoBackNProtocol {
+    private int winSize = 7;
+    private int frameId = 0;
+    private Random random = new Random();
+
+    public void sendFr(int totFrames) {
+        while (frameId < totFrames) {
+            int windowEnd = Math.min(frameId + winSize, totFrames);
+            for (int i = frameId; i < windowEnd; i++) {
+                System.out.println("Sender: Sending Frame " + i);
+                int scene = random.nextInt(3);
+                if (scene == 1) {
+                    System.out.println("Error: Frame " + i + " lost during transmission.");
+                    System.out.println("Sender: Go-Back-N triggered. Resending frames from Frame " + frameId);
+                    break;
+                } else if (scene == 2) {
+                    System.out.println("Receiver: Frame " + i + " received.");
+                    System.out.println("Error: Acknowledgment for Frame " + i + " lost.");
+                    System.out.println("Sender: Go-Back-N triggered. Resending frames from Frame " + frameId);
+                    break;
+                } else {
+                    System.out.println("Receiver: Frame " + i + " received successfully.");
+                    System.out.println("Receiver: Sending acknowledgment for Frame " + i);
+                    frameId++;
+                }
+            }
+            System.out.println("--------------------------------------------");
+        }
+        System.out.println("All frames have been sent successfully!");
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter the total number of frames to send: ");
+        int totFrames = sc.nextInt();
+        GoBackNProtocol gbn = new GoBackNProtocol();
+        gbn.sendFr(totFrames);
+    }
+}
+}
+
+{
+    //Selective repeat
+import java.util.Random;
+import java.util.Scanner;
+
+public class SelectiveRepeatARQ {
+    private int totalFr;
+    private int winSize = 7;
+    private boolean[] frames;
+    private int winStart = 0;
+    private Random random = new Random();
+
+    public SelectiveRepeatARQ(int totalFr) {
+        this.totalFr = totalFr;
+        this.frames = new boolean[totalFr];
+    }
+
+    public void sendFrames() {
+        while (winStart < totalFr) {
+            for (int i = winStart; i < Math.min(winStart + winSize, totalFr); i++) {
+                if (!frames[i]) {
+                    System.out.println("Sending Frame " + i);
+                    int scene = random.nextInt(3);
+                    if (scene == 0) {
+                        System.out.println("Frame " + i + " received.");
+                        frames[i] = true;
+                        System.out.println("Acknowledgment for Frame " + i + " sent.");
+                    } else if (scene == 1) {
+                        System.out.println("Error: Frame " + i + " lost.");
+                    } else {
+                        System.out.println("Frame " + i + " received.");
+                        System.out.println("Error: Acknowledgment for Frame " + i + " lost.");
+                    }
+                }
+            }
+            while (winStart < totalFr && frames[winStart]) {
+                winStart++;
+            }
+            System.out.println("Sliding window to Frame " + winStart);
+            System.out.println("--------------------------------------");
+        }
+        System.out.println("All frames sent successfully!");
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter the total number of frames: ");
+        int totalFr = sc.nextInt();
+        SelectiveRepeatARQ arq = new SelectiveRepeatARQ(totalFr);
+        arq.sendFrames();
+    }
+}
+    
+}
+
+{// Stop and wait
+
+    import java.util.Random;
+import java.util.Scanner;
+
+public class StopAndWaitProtocol {
+    
+    private int frId;
+    private boolean isAck;
+    private Random random;
+
+    public StopAndWaitProtocol() {
+        this.frId = 0;
+        this.isAck = true;
+        this.random = new Random();
+    }
+
+    public void sendFr() {
+        System.out.println("-----------------------------------------------");
+        System.out.println("Sending Frame " + frId);
+        isAck = false;
+        
+        int scene = random.nextInt(3);
+        
+        switch (scene) {
+            case 0:
+                System.out.println("Frame " + frId + " received.");
+                sendAck();
+                break;
+            case 1:
+                System.out.println("Error: Frame " + frId + " lost.");
+                break;
+            case 2:
+                System.out.println("Frame " + frId + " received.");
+                System.out.println("Error: Acknowledgment lost.");
+                break;
+        }
+        
+        if (!isAck) {
+            System.out.println("Timeout! Resending Frame " + frId);
+            sendFr();
+        }
+    }
+
+    private void sendAck() {
+        System.out.println("Acknowledgment for Frame " + frId + " sent.");
+        isAck = true;
+        frId++;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter the number of frames to send: ");
+        int totalFrames = sc.nextInt();
+
+        StopAndWaitProtocol swp = new StopAndWaitProtocol();
+        
+        for (int i = 0; i < totalFrames; i++) {
+            swp.sendFr();
+        }
+
+        System.out.println("All frames sent successfully!");
+    }
+}
+}
+
+{// crc  
+    import java.util.Scanner;
+
+public class crc {
+
+    public static String binary(String input) {
+        StringBuilder binstr = new StringBuilder();
+        
+        for (int i = 0; i < input.length(); i++) {
+            int digit = Integer.parseInt(String.valueOf(input.charAt(i)));
+            String binary = String.format("%04d", Integer.parseInt(Integer.toBinaryString(digit)));
+            binstr.append(binary);
+        }
+        
+        return binstr.toString();
+    }
+
+    public static String cal_crc(String input, String polynomial) {
+        int dataLen = input.length();
+        int polyLen = polynomial.length();
+        StringBuilder data = new StringBuilder(input);
+        for (int i = 0; i < polyLen - 1; i++) {
+            data.append("0");
+        }
+        for (int i = 0; i <= dataLen; i++) {
+            if (data.charAt(i) == '1') {
+                for (int j = 0; j < polyLen; j++) {
+                    char newChar = (char) (data.charAt(i + j) ^ polynomial.charAt(j) ^ '0');
+                    data.setCharAt(i + j, newChar);
+                }
+            }
+        }
+        return data.substring(dataLen);
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter the integer string: ");
+        String input = sc.nextLine();
+        String binstr = binary(input);
+        System.out.println("Binary representation: " + binstr);
+        String polynomial = "101";
+        String crc = cal_crc(binstr, polynomial);
+        System.out.println("The CRC value (remainder) is: " + crc);
+    }
+}
+}
+
+{
+   //hamming code
+
+public class hm {
+    public static void hamm_sender(String data) {
+        char[] hm = new char[22];
+        StringBuilder sb = new StringBuilder(data);
+        sb.reverse();
+        data = sb.toString();
+
+        int dataIndex = 0;
+
+        for (int i = 1; i < 22; i++) {
+            if (i == 1 || i == 2 || i == 4 || i == 8 || i == 16) {
+                hm[i] = 'p';
+            } else {
+                if (dataIndex < data.length()) {
+                    hm[i] = data.charAt(dataIndex);
+                    dataIndex++;
+                }
+            }
+        }
+        for (int i = 21; i > 0; i--) {
+            System.out.print(hm[i] + " ");
+        }
+        System.out.println();
+        hm[1] = (char) (((hm[3] ^ hm[5] ^ hm[7] ^ hm[9] ^ hm[11] ^ hm[13] ^ hm[15] ^ hm[17] ^ hm[19] ^ hm[21]) & 1)+ '0');
+        System.out.println("P1: " + (hm[3] + "^" + hm[5] + "^" + hm[7] + "^" + hm[9] + "^" + hm[11] + "^" + hm[13] + "^"+ hm[15] + "^" + hm[17] + "^" + hm[19] + "^" + hm[21]) + " = " + hm[1]);
+
+        hm[2] = (char) (((hm[3] ^ hm[6] ^ hm[7] ^ hm[10] ^ hm[11] ^ hm[14] ^ hm[15] ^ hm[18] ^ hm[19] ^ hm[21]) & 1)
+                + '0');
+        System.out.println("P2: " + (hm[3] + "^" + hm[6] + "^" + hm[7] + "^" + hm[10] + "^" + hm[11] + "^" + hm[14]
+                + "^" + hm[15] + "^" + hm[18] + "^" + hm[19] + "^" + hm[21]) + " = " + hm[2]);
+
+        hm[4] = (char) (((hm[5] ^ hm[6] ^ hm[7] ^ hm[12] ^ hm[13] ^ hm[14] ^ hm[15]) & 1) + '0');
+        System.out.println(
+                "P4: " + (hm[5] + "^" + hm[6] + "^" + hm[7] + "^" + hm[12] + "^" + hm[13] + "^" + hm[14] + "^" + hm[15])
+                        + " = " + hm[4]);
+
+        hm[8] = (char) (((hm[9] ^ hm[10] ^ hm[11] ^ hm[12] ^ hm[13] ^ hm[14] ^ hm[15]) & 1) + '0');
+        System.out.println("P8: "
+                + (hm[9] + "^" + hm[10] + "^" + hm[11] + "^" + hm[12] + "^" + hm[13] + "^" + hm[14] + "^" + hm[15])
+                + " = " + hm[8]);
+
+        hm[16] = (char) (((hm[17] ^ hm[18] ^ hm[19] ^ hm[20] ^ hm[21]) & 1) + '0');
+        System.out.println(
+                "P16: " + (hm[17] + "^" + hm[18] + "^" + hm[19] + "^" + hm[20] + "^" + hm[21]) + " = " + hm[16]);
+        System.out.println();
+
+        System.out.print("Hamming array: ");
+        for (int i = 21; i >= 0; i--) {
+            System.out.print(hm[i] + "");
+        }
+        System.out.println();
+
+        System.out.print("Data sent: ");
+        for (int i = 21; i >= 0; i--) {
+            System.out.print(hm[i] + "");
+        }
+        System.out.println();
+        System.out.println("At reciever side: ");
+        System.out.print("Data recieved: ");
+        for (int i = 21; i >= 0; i--) {
+            System.out.print(hm[i] + "");
+        }
+        System.out.println();
+        char p1 = (char) (((hm[1]^hm[3] ^ hm[5] ^ hm[7] ^ hm[9] ^ hm[11] ^ hm[13] ^ hm[15] ^ hm[17] ^ hm[19] ^ hm[21]) & 1)+'0');
+        char p2 = (char) (((hm[2]^hm[3] ^ hm[6] ^ hm[7] ^ hm[10] ^ hm[11] ^ hm[14] ^ hm[15] ^ hm[18] ^ hm[19] ^ hm[21]) & 1)+ '0');
+        char p4 = (char) (((hm[4]^hm[5] ^ hm[6] ^ hm[7] ^ hm[12] ^ hm[13] ^ hm[14] ^ hm[15]) & 1)+ '0');
+        char p8 = (char) (((hm[8]^hm[9] ^ hm[10] ^ hm[11] ^ hm[12] ^ hm[13] ^ hm[14] ^ hm[15]) & 1)+ '0');
+        char p16 = (char) (((hm[16]^hm[17] ^ hm[18] ^ hm[19] ^ hm[20] ^ hm[21]) & 1)+ '0');
+
+        System.out.println("P1: "+p1);
+        System.out.println("P2: "+p2);
+        System.out.println("P4: "+p4);
+        System.out.println("P8: "+p8);
+        System.out.println("P16: "+p16);
+
+        int error = (int)(p1-'0')*1 + (int)(p2-'0')*2 + (int)(p4-'0')*4 + (int)(p8-'0')*8 + (int)(p16-'0')*16;
+        if(error!=0){
+            System.out.println("Error at position: "+error);
+            if(hm[error]=='0'){
+                hm[error] = '1';
+            }else{
+                hm[error] = '0';
+            }
+            System.out.print("Corrected data: ");
+            for (int i = 21; i >= 0; i--) {
+                System.out.print(hm[i] + "");
+            }
+            System.out.println();
+        }else{
+            System.out.println("No error");
+        }
+    }
+    public static void main(String[] args) {
+        String binaryData = "0010001000111000";
+        System.out.println("Sender side: ");
+        hamm_sender(binaryData);
+    }
+}

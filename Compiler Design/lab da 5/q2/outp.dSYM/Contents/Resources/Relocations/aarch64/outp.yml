@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/harsh/LAB/Compiler Design/lab da 5/q2/outp'
+relocations:     []
+...
