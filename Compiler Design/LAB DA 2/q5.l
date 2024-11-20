@@ -14,10 +14,10 @@
 
 %%
 
-int main(int argc, char **argv) {
-    if (argc > 1) {
-        FILE *file = fopen(argv[1], "r");
-        yyin = file;
+int main(int argc,int ) {
+    if(argc>1){
+        FILE *file= fopen(argv[1],"r");
+        yyin=file;
     }
     yylex();
 
