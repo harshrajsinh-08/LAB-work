@@ -2,17 +2,15 @@ import java.util.Scanner;
 public class tryt{
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-        String regno = sc.nextLine();
+        String regno=sc.nextLine();
         String[] regbin = new String[regno.length()];
         for(int i=0;i<regno.length();i++){
-            regbin[i]= toBinary(regno.charAt(i));
-            System.out.println(regno.charAt(i)+" -> "+regbin[i]);
+            regbin[i]=toBinary(regno.charAt(i));
         }
         calc(regbin);
-        sc.close();
     }
     public static String toBinary(char ch){
-        int value=0;
+        int value;
         if(Character.isDigit(ch)){
             value = ch-'0';
         }else{
@@ -25,13 +23,13 @@ public class tryt{
         return binary;
     }
     public static void calc(String[] regbin){
-        int lrc[] = new int[4];
+        int[] lrc = new int[4];
         StringBuilder lrcResult = new StringBuilder();
         StringBuilder vrcResult = new StringBuilder();
-        for(String s: regbin){
+        for(String s:regbin){
             int ones=0;
             for(int i=0;i<4;i++){
-                lrc[i]^= Character.getNumericValue(s.charAt(i));
+                lrc[i]^=Character.getNumericValue(s.charAt(i));
                 if(s.charAt(i)=='1') ones++;
             }
             vrcResult.append((ones%2==0)?'0':'1');
@@ -39,7 +37,7 @@ public class tryt{
         for(int i:lrc){
             lrcResult.append(i);
         }
-        System.out.println("LRC : "+lrcResult.toString());
-        System.out.println("VRC :"+ vrcResult.toString());
+        System.out.println("LRC "+ lrcResult.toString());
+        System.out.println("VRC "+ vrcResult.toString());
     }
 }

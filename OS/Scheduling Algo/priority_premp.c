@@ -4,70 +4,50 @@
 struct Process {
     int pid;         // Process ID
     int arrival;     // Arrival time
-    int burst;       // Burst time
+    int burst;       // Total burst time
+    int remaining;   // Remaining burst time
     int priority;    // Priority (lower value = higher priority)
     int completion;  // Completion time
     int turnaround;  // Turnaround time
     int waiting;     // Waiting time
 };
 
-// Helper function to swap two process structures
-void swap(struct Process *a, struct Process *b) {
-    struct Process temp = *a;
-    *a = *b;
-    *b = temp;
-}
-
-// Function to sort processes by arrival time and priority
-void sortByArrivalAndPriority(struct Process proc[], int n) {
-    for (int i = 0; i < n - 1; i++) {
-        for (int j = 0; j < n - i - 1; j++) {
-            if (proc[j].arrival > proc[j + 1].arrival || 
-               (proc[j].arrival == proc[j + 1].arrival && proc[j].priority > proc[j + 1].priority)) {
-                swap(&proc[j], &proc[j + 1]);
-            }
-        }
-    }
-}
-
-// Function to implement Priority Scheduling (Non-preemptive)
-void priorityScheduling(struct Process proc[], int n) {
+// Function to implement Preemptive Priority Scheduling
+void preemptivePriorityScheduling(struct Process proc[], int n) {
     int currentTime = 0, completed = 0;
     int totalTurnaround = 0, totalWaiting = 0;
-    int isCompleted[n];
-    int sequence[n], seqIndex = 0;
-
-    // Initialize isCompleted array
-    for (int i = 0; i < n; i++) {
-        isCompleted[i] = 0;
-    }
+    int sequence[100], seqIndex = 0;
 
     while (completed < n) {
         int minPriority = 1e9, idx = -1;
 
-        // Find the highest priority process that has arrived and is not completed
+        // Find the process with the highest priority that has arrived and has remaining time
         for (int i = 0; i < n; i++) {
-            if (proc[i].arrival <= currentTime && !isCompleted[i] && proc[i].priority < minPriority) {
+            if (proc[i].arrival <= currentTime && proc[i].remaining > 0 && proc[i].priority < minPriority) {
                 minPriority = proc[i].priority;
                 idx = i;
             }
         }
 
         if (idx != -1) {
-            // Execute the selected process
-            currentTime += proc[idx].burst;
-            proc[idx].completion = currentTime;
-            proc[idx].turnaround = proc[idx].completion - proc[idx].arrival;
-            proc[idx].waiting = proc[idx].turnaround - proc[idx].burst;
-
-            totalTurnaround += proc[idx].turnaround;
-            totalWaiting += proc[idx].waiting;
-            isCompleted[idx] = 1;
+            // Execute the selected process for 1 time unit
+            proc[idx].remaining--;
             sequence[seqIndex++] = proc[idx].pid;
 
-            completed++;
+            // If the process is completed
+            if (proc[idx].remaining == 0) {
+                completed++;
+                proc[idx].completion = currentTime + 1;
+                proc[idx].turnaround = proc[idx].completion - proc[idx].arrival;
+                proc[idx].waiting = proc[idx].turnaround - proc[idx].burst;
+
+                totalTurnaround += proc[idx].turnaround;
+                totalWaiting += proc[idx].waiting;
+            }
+
+            currentTime++;
         } else {
-            // If no process is found, increment the current time
+            // If no process is ready, increment the current time
             currentTime++;
         }
     }
@@ -108,13 +88,11 @@ int main() {
         proc[i].pid = i + 1;
         printf("Process %d: ", proc[i].pid);
         scanf("%d %d %d", &proc[i].arrival, &proc[i].burst, &proc[i].priority);
+        proc[i].remaining = proc[i].burst; // Initialize remaining time
     }
 
-    // Sort processes by arrival time and priority
-    sortByArrivalAndPriority(proc, n);
-
-    // Call the priority scheduling function
-    priorityScheduling(proc, n);
+    // Call the scheduling function
+    preemptivePriorityScheduling(proc, n);
 
     return 0;
 }

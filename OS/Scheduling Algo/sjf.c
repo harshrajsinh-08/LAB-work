@@ -1,109 +1,112 @@
 #include <stdio.h>
-struct Process
-{
-    int pid;
-    int bt;
-    int at;
-    int ct;
-    int tat;
-    int wt;
-    int rt;
+
+// Structure to represent a process
+struct Process {
+    int pid;         // Process ID
+    int arrival;     // Arrival time
+    int burst;       // Burst time
+    int completion;  // Completion time
+    int turnaround;  // Turnaround time
+    int waiting;     // Waiting time
+    int isCompleted; // Flag to check if the process is completed
 };
 
-void findWaitingTime(struct Process proc[], int n)
-{
-    int complete = 0, t = 0, minm = 10000;
-    int shortest = 0, finish_time;
-    int check = 0;
-    
-    for (int i = 0; i < n; i++)
-    {
-        proc[i].rt = proc[i].bt;
+// Function to sort processes based on arrival time and burst time
+void sortProcesses(struct Process proc[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (proc[j].arrival > proc[j + 1].arrival || 
+                (proc[j].arrival == proc[j + 1].arrival && proc[j].burst > proc[j + 1].burst)) {
+                // Swap processes
+                struct Process temp = proc[j];
+                proc[j] = proc[j + 1];
+                proc[j + 1] = temp;
+            }
+        }
     }
+}
 
-    while (complete != n)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            if ((proc[j].at <= t) && (proc[j].rt < minm) && proc[j].rt > 0)
-            {
-                minm = proc[j].rt;
-                shortest = j;
-                check = 1;
+// Function to implement Non-Preemptive SJF Scheduling
+void nonPreemptiveSJF(struct Process proc[], int n) {
+    int currentTime = 0, completed = 0;
+    int totalTurnaround = 0, totalWaiting = 0;
+    int sequence[n], seqIndex = 0;
+
+    while (completed < n) {
+        // Find the process with the shortest burst time that has arrived and is not completed
+        int shortest = -1;
+        int minBurst = 1e9;
+
+        for (int i = 0; i < n; i++) {
+            if (proc[i].arrival <= currentTime && !proc[i].isCompleted && proc[i].burst < minBurst) {
+                minBurst = proc[i].burst;
+                shortest = i;
             }
         }
 
-        if (check == 0)
-        {
-            t++;
-            continue;
+        if (shortest == -1) {
+            // No process is available; increment time
+            currentTime++;
+        } else {
+            // Process the selected shortest process
+            proc[shortest].completion = currentTime + proc[shortest].burst;
+            proc[shortest].turnaround = proc[shortest].completion - proc[shortest].arrival;
+            proc[shortest].waiting = proc[shortest].turnaround - proc[shortest].burst;
+
+            totalTurnaround += proc[shortest].turnaround;
+            totalWaiting += proc[shortest].waiting;
+
+            proc[shortest].isCompleted = 1;
+            sequence[seqIndex++] = proc[shortest].pid;
+
+            currentTime = proc[shortest].completion;
+            completed++;
         }
-
-        proc[shortest].rt--;
-        minm = proc[shortest].rt;
-
-        if (minm == 0)
-        {
-            minm = 10000;
-        }
-
-        if (proc[shortest].rt == 0)
-        {
-            complete++;
-            check = 0;
-            finish_time = t + 1;
-            proc[shortest].wt = finish_time - proc[shortest].bt - proc[shortest].at;
-
-            if (proc[shortest].wt < 0)
-                proc[shortest].wt = 0;
-        }
-
-        t++;
-    }
-}
-
-void findTurnAroundTime(struct Process proc[], int n)
-{
-    for (int i = 0; i < n; i++)
-    {
-        proc[i].tat = proc[i].bt + proc[i].wt;
-    }
-}
-
-void findavgTime(struct Process proc[], int n)
-{
-    int total_wt = 0, total_tat = 0;
-
-    findWaitingTime(proc, n);
-    findTurnAroundTime(proc, n);
-
-    printf("Processes Arrival Time Burst Time Waiting Time Turnaround Time\n");
-
-    for (int i = 0; i < n; i++)
-    {
-        total_wt += proc[i].wt;
-        total_tat += proc[i].tat;
-        printf(" %d\t\t%d\t %d\t\t%d\t\t%d\n", proc[i].pid, proc[i].at, proc[i].bt, proc[i].wt, proc[i].tat);
     }
 
-    printf("\nAverage waiting time = %.2f", (float)total_wt / n);
-    printf("\nAverage turnaround time = %.2f\n", (float)total_tat / n);
+    // Display process details
+    printf("PID\tArrival\tBurst\tCompletion\tTurnaround\tWaiting\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d\t%d\t%d\t%d\t\t%d\t\t%d\n", 
+               proc[i].pid, proc[i].arrival, proc[i].burst, 
+               proc[i].completion, proc[i].turnaround, proc[i].waiting);
+    }
+
+    // Calculate and display averages
+    printf("\nAverage Turnaround Time: %.2f\n", (float)totalTurnaround / n);
+    printf("Average Waiting Time: %.2f\n", (float)totalWaiting / n);
+
+    // Display execution sequence
+    printf("\nExecution Sequence: ");
+    for (int i = 0; i < seqIndex; i++) {
+        printf("%d ", sequence[i]);
+    }
+    printf("\n");
 }
 
-int main()
-{
+int main() {
     int n;
-    printf("Enter number of processes: ");
+
+    // Read the number of processes
+    printf("Enter the number of processes: ");
     scanf("%d", &n);
+
     struct Process proc[n];
 
-    for (int i = 0; i < n; i++)
-    {
-        printf("Enter arrival time and burst time for process %d: ", i + 1);
-        scanf("%d %d", &proc[i].at, &proc[i].bt);
+    // Read process details
+    printf("Enter arrival time and burst time for each process:\n");
+    for (int i = 0; i < n; i++) {
         proc[i].pid = i + 1;
+        printf("Process %d: ", proc[i].pid);
+        scanf("%d %d", &proc[i].arrival, &proc[i].burst);
+        proc[i].isCompleted = 0; // Initialize isCompleted to 0
     }
 
-    findavgTime(proc, n);
+    // Sort the processes by arrival time and burst time
+    sortProcesses(proc, n);
+
+    // Call the scheduling function
+    nonPreemptiveSJF(proc, n);
+
     return 0;
 }
