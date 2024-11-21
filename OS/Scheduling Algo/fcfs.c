@@ -9,7 +9,6 @@ struct Process {
     int waiting;     // Waiting Time
 };
 
-// Function to sort processes by their arrival time
 void sortByArrival(struct Process proc[], int n) {
     for (int i = 0; i < n - 1; i++) {
         for (int j = i + 1; j < n; j++) {

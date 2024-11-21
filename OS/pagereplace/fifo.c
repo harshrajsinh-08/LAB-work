@@ -5,10 +5,10 @@
 int isPageInFrame(int frame[], int frameSize, int page) {
     for (int i = 0; i < frameSize; i++) {
         if (frame[i] == page) {
-            return 1; // Page found in the frame
+            return 1; 
         }
     }
-    return 0; // Page not in the frame
+    return 0;
 }
 
 // Function to implement FIFO page replacement

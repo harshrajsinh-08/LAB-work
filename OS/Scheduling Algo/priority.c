@@ -64,7 +64,6 @@ void priorityScheduling(struct Process proc[], int n) {
             totalWaiting += proc[idx].waiting;
             isCompleted[idx] = 1;
             sequence[seqIndex++] = proc[idx].pid;
-
             completed++;
         } else {
             // If no process is found, increment the current time
