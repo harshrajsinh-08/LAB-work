@@ -39,7 +39,7 @@ void implementWorstFit(int blockSize[], int blocks, int processSize[], int proce
 
             // If the block size becomes 0, mark it as fully occupied (no further processes can fit)
             if (blockSize[indexPlaced] == 0) {
-                blockSize[indexPlaced] = -1; // Block is now fully occupied
+                blockSize[indexPlaced] = -1; // Mark as fully occupied
             }
         }
     }

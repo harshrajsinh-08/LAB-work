@@ -1,17 +1,20 @@
 #include <stdio.h>
 
 struct Process {
-    int pid;       
-    int arrival;   
-    int burst;     
-    int completion;
-    int turnaround;
-    int waiting;   
+    int pid;         // Process ID
+    int arrival;     // Arrival Time
+    int burst;       // Burst Time
+    int completion;  // Completion Time
+    int turnaround;  // Turnaround Time
+    int waiting;     // Waiting Time
 };
+
+// Function to sort processes by their arrival time
 void sortByArrival(struct Process proc[], int n) {
     for (int i = 0; i < n - 1; i++) {
         for (int j = i + 1; j < n; j++) {
             if (proc[i].arrival > proc[j].arrival) {
+                // Swap processes
                 struct Process temp = proc[i];
                 proc[i] = proc[j];
                 proc[j] = temp;
@@ -20,30 +23,30 @@ void sortByArrival(struct Process proc[], int n) {
     }
 }
 
+// Function to implement FCFS scheduling
 void firstComeFirstServe(struct Process proc[], int n) {
     int currentTime = 0;
     int totalTurnaround = 0, totalWaiting = 0;
+
+    // Calculate completion, turnaround, and waiting times
     for (int i = 0; i < n; i++) {
         if (currentTime < proc[i].arrival) {
-            currentTime = proc[i].arrival;
+            currentTime = proc[i].arrival;  // Wait until process arrives
         }
         proc[i].completion = currentTime + proc[i].burst;
         proc[i].turnaround = proc[i].completion - proc[i].arrival;
         proc[i].waiting = proc[i].turnaround - proc[i].burst;
 
+        currentTime = proc[i].completion;  // Update current time
         totalTurnaround += proc[i].turnaround;
         totalWaiting += proc[i].waiting;
-
-        currentTime = proc[i].completion;
-    }
-    printf("\nProcess Execution Sequence: ");
-    for (int i = 0; i < n; i++) {
-        printf("P%d ", proc[i].pid);
     }
 
-    printf("\n\nPID\tArrival\tBurst\tCompletion\tTurnaround\tWaiting\n");
+    // Print process details and calculate averages
+    printf("PID\tArrival\tBurst\tCompletion\tTurnaround\tWaiting\n");
     for (int i = 0; i < n; i++) {
-        printf("%d\t%d\t%d\t%d\t\t%d\t\t%d\n", proc[i].pid, proc[i].arrival, proc[i].burst, 
+        printf("%d\t%d\t%d\t%d\t\t%d\t\t%d\n",
+               proc[i].pid, proc[i].arrival, proc[i].burst,
                proc[i].completion, proc[i].turnaround, proc[i].waiting);
     }
 
@@ -53,17 +56,16 @@ void firstComeFirstServe(struct Process proc[], int n) {
 
 int main() {
     int n;
-    struct Process proc[100];
 
-    printf("Enter number of processes: ");
+    printf("Enter the number of processes: ");
     scanf("%d", &n);
 
+    struct Process proc[n];
     for (int i = 0; i < n; i++) {
-        proc[i].pid = i + 1;
-        printf("Enter Arrival Time and Burst Time of process %d: ", proc[i].pid);
+        printf("Enter arrival time and burst time for process %d: ", i + 1);
+        proc[i].pid = i + 1;  
         scanf("%d %d", &proc[i].arrival, &proc[i].burst);
     }
-
     sortByArrival(proc, n);
     firstComeFirstServe(proc, n);
 

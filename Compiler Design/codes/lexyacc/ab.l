@@ -9,8 +9,8 @@ int word_count = 0;
     printf("Found word: %s\n", yytext);
 }
 
-[ \t\n]+    ;  /* Ignore whitespace */
-.           ;  /* Ignore other characters */
+[ \t\n]+    ;  
+.           ; 
 
 %%
 
