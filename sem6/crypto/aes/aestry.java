@@ -1,6 +1,5 @@
 import java.util.Arrays;
-
-public class AESKeyExpansion {
+public class aestry{
     private static final int[] RCON = {
             0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36
     };
@@ -23,55 +22,52 @@ public class AESKeyExpansion {
         {0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16}
     };
 
-    private static int subWord(int word) {
-        return (sBox((word >> 24) & 0xFF) << 24) |
-               (sBox((word >> 16) & 0xFF) << 16) |
-               (sBox((word >> 8) & 0xFF) << 8) |
-               (sBox(word & 0xFF));
+    public static int rotate(int word){
+        return ((word<<8) | ((word>>24)&0xFF));
     }
-
-    private static int rotWord(int word) {
-        return ((word << 8) | ((word >> 24) & 0xFF));
+    public static int sBox(int byteval){
+        return sbox[byteval/16][byteval%16];
     }
-
-    private static int sBox(int byteVal) {
-        return sbox[byteVal / 16][byteVal % 16];
+    public static int subword(int word){
+        return 
+        ( sBox((word<<24)&0xFF) << 24)|
+        ( sBox((word>>16)&0xFF)<<16)|
+        ( sBox((word>>8)&0xFF)<<8)|
+        ( sBox(word&0xFF));
     }
-
-    public static int[] expandKey(byte[] key) {
-        int[] expandedKey = new int[44];
-
-        for (int i = 0; i < 4; i++) {
-            expandedKey[i] = ((key[i * 4] & 0xFF) << 24) |
-                             ((key[i * 4 + 1] & 0xFF) << 16) |
-                             ((key[i * 4 + 2] & 0xFF) << 8) |
-                             (key[i * 4 + 3] & 0xFF);
+    public static int[] expkey(int[] key){
+        int[] expkey = new int[44];
+        for(int i=0;i<4;i++){
+            expkey[i] = 
+            ((key[i*4]) <<24)|
+            ((key[i*4+1]) <<16)|
+            ((key[i*4+2]) <<8)|
+            ((key[i*4+3]));
         }
-
-        for (int i = 4; i < 44; i++) {
-            int temp = expandedKey[i - 1];
-            if (i % 4 == 0) {
-                temp = subWord(rotWord(temp)) ^ (RCON[(i / 4) - 1] << 24);
+        for(int i=4;i<44;i++){
+            int temp = expkey[i-1];
+            if(i%4==0){
+                temp = subword(rotate(temp)) ^ (RCON[(i/4)-1]<<24);
             }
-            expandedKey[i] = expandedKey[i - 4] ^ temp;
+            expkey[i] = expkey[i-4]^temp;
         }
-
-        return expandedKey;
+        return expkey;
     }
-
     public static void printExpandedKey(int[] expandedKey) {
         for (int i = 0; i < expandedKey.length; i++) {
-            System.out.printf("Word %d: %08X\n", i, expandedKey[i]);
+            String binary = String.format("%32s", Integer.toBinaryString(expandedKey[i])).replace(' ', '0');
+            System.out.println("Word " + i + ": " + binary);
         }
     }
-
     public static void main(String[] args) {
-        byte[] key = {(byte) 0x2b, (byte) 0x7e, (byte) 0x15, (byte) 0x16,
-                      (byte) 0x28, (byte) 0xae, (byte) 0xd2, (byte) 0xa6,
-                      (byte) 0xab, (byte) 0xf7, (byte) 0x15, (byte) 0x88,
-                      (byte) 0x09, (byte) 0xcf, (byte) 0x4f, (byte) 0x3c};
-        
-        int[] expandedKey = expandKey(key);
+        int[] key = {
+            0x2b, 0x7e, 0x15, 0x16,
+            0x28, 0xae, 0xd2, 0xa6,
+            0xab, 0xf7, 0xcf, 0x15,
+            0x88, 0x09, 0xcf, 0x4f
+        };
+        int[] expandedKey = expkey(key);
         printExpandedKey(expandedKey);
     }
+
 }

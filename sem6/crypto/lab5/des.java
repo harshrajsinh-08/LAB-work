@@ -2,11 +2,13 @@ import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import java.util.Base64;
+import java.util.*;
 
 public class des {
     public static void main(String[] args) throws Exception {
-        String data = "ConfidentialData";
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter data to encrypt: ");
+        String data = sc.nextLine();
         KeyGenerator keyGen = KeyGenerator.getInstance("DES");
         keyGen.init(56);
         SecretKey secretKey = keyGen.generateKey();

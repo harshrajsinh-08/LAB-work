@@ -1,12 +1,13 @@
+import java.util.*;
 public class AESFromScratch {
 
-    private int Nk;  // Key size in words (number of 32-bit words in the key)
-    private int Nb = 4;  // Block size in words (always 4 for AES)
-    private int Nr;  // Number of rounds, depends on key size
+    private int Nk;  
+    private int Nb = 4;  
+    private int Nr;  
 
-    private byte[][] state = new byte[4][Nb]; // State array
+    private byte[][] state = new byte[4][Nb]; 
 
-    private byte[][] keySchedule; // Expanded key
+    private byte[][] keySchedule;
     static byte[][] sbox = {
             {(byte)0x63, (byte)0x7c, (byte)0x77, (byte)0x7b, (byte)0xf2, (byte)0x6b, (byte)0x6f, (byte)0xc5, (byte)0x30, (byte)0x01, (byte)0x67, (byte)0x2b, (byte)0xfe, (byte)0xd7, (byte)0xab, (byte)0x76},
             {(byte)0xca, (byte)0x82, (byte)0xc9, (byte)0x7d, (byte)0xfa, (byte)0x59, (byte)0x47, (byte)0xf0, (byte)0xad, (byte)0xd4, (byte)0xa2, (byte)0xaf, (byte)0x9c, (byte)0xa4, (byte)0x72, (byte)0xc0},
@@ -88,12 +89,10 @@ public class AESFromScratch {
     private byte[] padInput(byte[] input) {
         int paddingLength = 16 - (input.length % 16);
         if (paddingLength == 0) {
-            paddingLength = 16; // Pad with a full block if already a multiple of 16
+            paddingLength = 16;
         }
         byte[] paddedInput = new byte[input.length + paddingLength];
         System.arraycopy(input, 0, paddedInput, 0, input.length);
-
-        // PKCS7 padding: pad with the number of padding bytes
         for (int i = input.length; i < paddedInput.length; i++) {
             paddedInput[i] = (byte) paddingLength;
         }
@@ -102,10 +101,8 @@ public class AESFromScratch {
 
     private byte[] unpadInput(byte[] paddedInput) {
         int paddingLength = paddedInput[paddedInput.length - 1] & 0xFF;
-
-        // Check for corrupted padding
         if (paddingLength > 16 || paddingLength <= 0) {
-            return paddedInput; // Invalid padding, return original (or throw exception)
+            return paddedInput;
         }
 
         int newLength = paddedInput.length - paddingLength;
@@ -115,13 +112,10 @@ public class AESFromScratch {
     }
 
     public byte[] encrypt(byte[] input, byte[] key) {
-        // Pad the input to be multiple of 16 bytes
         byte[] paddedInput = padInput(input);
         byte[] output = new byte[paddedInput.length];
 
         keyExpansion(key);
-
-        // Process each 16-byte block
         for (int i = 0; i < paddedInput.length; i += 16) {
             byte[] block = new byte[16];
             System.arraycopy(paddedInput, i, block, 0, 16);
@@ -136,8 +130,6 @@ public class AESFromScratch {
         if (input.length != 16) {
             throw new IllegalArgumentException("Block length must be 128 bits");
         }
-
-        // Copy input to state array
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < Nb; j++) {
                 state[i][j] = input[i + 4 * j];
@@ -174,16 +166,12 @@ public class AESFromScratch {
 
         keyExpansion(key);
         byte[] output = new byte[input.length];
-
-        // Process each 16-byte block
         for (int i = 0; i < input.length; i += 16) {
             byte[] block = new byte[16];
             System.arraycopy(input, i, block, 0, 16);
             byte[] decryptedBlock = decryptBlock(block, key);
             System.arraycopy(decryptedBlock, 0, output, i, 16);
         }
-
-        // Remove padding from the final result
         return unpadInput(output);
     }
 
@@ -191,8 +179,6 @@ public class AESFromScratch {
         if (input.length != 16) {
             throw new IllegalArgumentException("Block length must be 128 bits");
         }
-
-        // Copy input to state array
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < Nb; j++) {
                 state[i][j] = input[i + 4 * j];
@@ -221,8 +207,6 @@ public class AESFromScratch {
 
         return output;
     }
-
-    // Key Expansion
     private void keyExpansion(byte[] key) {
         int Nb = 4;
         int Nk;
@@ -243,15 +227,11 @@ public class AESFromScratch {
 
         keySchedule = new byte[Nb * (Nr + 1)][4];
         byte[] temp = new byte[4];
-
-        // The first Nk words are the key itself.
         for (int i = 0; i < Nk; i++) {
             for (int j = 0; j < 4; j++) {
                 keySchedule[i][j] = key[i * 4 + j];
             }
         }
-
-        // All other words w[i] are computed recursively based on w[i-1] and w[i-Nk].
         for (int i = Nk; i < Nb * (Nr + 1); i++) {
             for (int j = 0; j < 4; j++) {
                 temp[j] = keySchedule[i - 1][j];
@@ -285,7 +265,6 @@ public class AESFromScratch {
         return result;
     }
 
-    // SubBytes
     private void subBytes() {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < Nb; j++) {
@@ -294,7 +273,6 @@ public class AESFromScratch {
         }
     }
 
-    // InvSubBytes
     private void invSubBytes() {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < Nb; j++) {
@@ -302,19 +280,14 @@ public class AESFromScratch {
             }
         }
     }
-
-    // ShiftRows
     private void shiftRows() {
         byte temp;
-
-        // Row 1
         temp = state[1][0];
         state[1][0] = state[1][1];
         state[1][1] = state[1][2];
         state[1][2] = state[1][3];
         state[1][3] = temp;
 
-        // Row 2
         temp = state[2][0];
         state[2][0] = state[2][2];
         state[2][2] = temp;
@@ -322,26 +295,20 @@ public class AESFromScratch {
         state[2][1] = state[2][3];
         state[2][3] = temp;
 
-        // Row 3
         temp = state[3][3];
         state[3][3] = state[3][2];
         state[3][2] = state[3][1];
         state[3][1] = state[3][0];
         state[3][0] = temp;
     }
-
-    // InvShiftRows
     private void invShiftRows() {
         byte temp;
-
-        // Row 1
         temp = state[1][3];
         state[1][3] = state[1][2];
         state[1][2] = state[1][1];
         state[1][1] = state[1][0];
         state[1][0] = temp;
 
-        // Row 2
         temp = state[2][0];
         state[2][0] = state[2][2];
         state[2][2] = temp;
@@ -349,7 +316,6 @@ public class AESFromScratch {
         state[2][1] = state[2][3];
         state[2][3] = temp;
 
-        // Row 3
         temp = state[3][0];
         state[3][0] = state[3][1];
         state[3][1] = state[3][2];
@@ -357,7 +323,6 @@ public class AESFromScratch {
         state[3][3] = temp;
     }
 
-    // MixColumns
     private void mixColumns() {
         byte[] column = new byte[4];
         for (int c = 0; c < 4; c++) {
@@ -382,8 +347,6 @@ public class AESFromScratch {
         return newColumn;
     }
 
-
-    // InvMixColumns
     private void invMixColumns() {
         byte[] column = new byte[4];
         for (int c = 0; c < 4; c++) {
@@ -424,14 +387,12 @@ public class AESFromScratch {
                 (a & 0x80) != 0);
             a <<= 1;
             if (highBitSet) {
-                a ^= 0x11b; // AES prime polynomial
+                a ^= 0x11b;
             }
             b >>>= 1;
         }
         return p & 0xFF;
     }
-
-    // AddRoundKey
     private void addRoundKey(int round) {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < Nb; j++) {
@@ -449,24 +410,21 @@ public class AESFromScratch {
     }
 
     public static void main(String[] args) {
-        // Example key (16 bytes for AES-128)
+        Scanner sc = new java.util.Scanner(System.in);
+
+        System.out.print("Enter a message to encrypt: ");
+        String message = sc.nextLine();
+
         byte[] key = new byte[16];
         for (int i = 0; i < key.length; i++) {
             key[i] = (byte) i;
         }
-
-        // Test string of any length
-        String message = "Hello, AES World! This is a longer message to test padding.";
         byte[] input = message.getBytes();
 
         AESFromScratch aes = new AESFromScratch(128);
-
-        // Encrypt
         byte[] encrypted = aes.encrypt(input, key);
         System.out.println("Original: " + message);
         System.out.println("Encrypted (hex): " + bytesToHex(encrypted));
-
-        // Decrypt
         byte[] decrypted = aes.decrypt(encrypted, key);
         System.out.println("Decrypted: " + new String(decrypted));
     }
